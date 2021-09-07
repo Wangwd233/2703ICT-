@@ -12,6 +12,6 @@
    <p>Number of seats: {{$vehicle->seats}}</p>
 
    <a href= "{{url("vehicle_update/$vehicle->vehicle_id")}}">Edit vehicle information</a><br>
-   <a href= "{{url("/")}}">Delete this vehicle</a><br>
+   <a href= "{{url("vehicle_delete/$vehicle->vehicle_id")}}">Delete this vehicle</a><br>
    <a href= "{{url("/")}}">Home</a><br>
 @endsection

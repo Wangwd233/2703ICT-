@@ -59,6 +59,10 @@ Route::post('update_vehicle_action', function(){
    return view('vehicle.vehicle_detail')->with("vehicle", $vehicle);
 });
 
+Route::get('vehicle_delete/{vehicle_id}', function($vehicle_id){
+   return view('vehicle.vehicle_delete')->with('id', $vehicle_id);
+});
+
 Route::get('test', function (){
    return view('test');
 });
@@ -80,15 +84,40 @@ function get_vehicle($id){
 };
 
 function add_vehicle($rego, $model, $year, $odometer, $seats){
-   $sql = 'insert into vehicle (rego, model, year, odometer, seats) values(?, ?, ?, ?, ?)';
-   DB::insert($sql, array($rego, $model, $year, $odometer, $seats));
-   $id = DB::getPdo()->lastInsertId();
-   return($id);
+   $i = TRUE;
+   $sql = 'select * from vehicle';
+   $vehicle = DB::select($sql);
+   foreach($vehicle as $vehicle_detail){
+     if($rego == $vehicle_detail->rego){
+         $i = FALSE;
+     };
+   };
+
+   if($i == TRUE){
+      $sql = 'insert into vehicle (rego, model, year, odometer, seats) values(?, ?, ?, ?, ?)';
+      DB::insert($sql, array($rego, $model, $year, $odometer, $seats));
+      $id = DB::getPdo()->lastInsertId();
+      return($id);
+   }else{
+      die("The vehicle with rego $rego is already exist!");
+   };
 };
 
 function update_vehicle($id, $rego, $model, $year, $odometer, $seats){
-   $sql = 'update vehicle set rego = ?, model = ?, year = ?, odometer = ?, seats = ? where vehicle_id = ?';
-   DB::update($sql, array($rego, $model, $year, $odometer, $seats, $id));
+   $i = TRUE;
+   $sql = 'select * from vehicle';
+   $vehicle = DB::select($sql);
+   foreach($vehicle as $vehicle_detail){
+      if($rego == $vehicle_detail->rego){
+          $i = FALSE;
+      };
+    };
+   if($i == TRUE){
+      $sql = 'update vehicle set rego = ?, model = ?, year = ?, odometer = ?, seats = ? where vehicle_id = ?';
+      DB::update($sql, array($rego, $model, $year, $odometer, $seats, $id));
+   }else{
+      die("The vehicle with rego $rego is already exist!");
+   };
 };
 
 function convert_date($date){
