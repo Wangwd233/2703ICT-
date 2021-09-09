@@ -159,21 +159,38 @@ Route::get('clients_detail', function(){
 
 //booking_list page
 Route::get('booking_list', function(){
+  $errormsg = "";
   $sql = 'select client_id, client_name from clients';
   $client_name = DB::select($sql);
   $sql = 'select vehicle_id, rego from vehicle';
   $vehicle_rego = DB::select($sql);
-  return view('booking.booking_list')->with('clients', $client_name)->with('vehicle_rego', $vehicle_rego);
+  return view('booking.booking_list')->with('clients', $client_name)->with('vehicle_rego', $vehicle_rego)->with('errormsg', $errormsg);
 });
 
 //Route for submitting a booking
 Route::post('booking_action', function(){
+  $errormsg = "";
   $client_id = request('id');
   $vehicle_id = request('rego');
   $start_date = request('startdate');
   $end_date = request('enddate');
-  $id = booking_request($client_id, $vehicle_id, $start_date, $end_date);
-  return view('booking.booking_success');
+  $client_name = get_client_name($client_id);
+  $sql = 'select vehicle_id, rego from vehicle';
+  $vehicle_rego = DB::select($sql);
+  $start_date_timestamp = strtotime($start_date);
+  $end_date_timestamp = strtotime($end_date);
+  $currenttime = date('Y-m-d h:i:s', time());
+  $currenttimestamp = strtotime($currenttime);
+  if($start_date_timestamp < $currenttimestamp){
+     $errormsg = "Error: Start date must be a date and time in the future!";
+     return view('booking.booking_list')->with('clients', $client_name)->with('vehicle_rego', $vehicle_rego)->with('errormsg', $errormsg);
+  }elseif($start_date_timestamp >= $end_date_timestamp){
+     $errormsg = "Error: Returning date should later than the start date!";
+     return view('booking.booking_list')->with('clients', $client_name)->with('vehicle_rego', $vehicle_rego)->with('errormsg', $errormsg);
+  }else{
+     $id = booking_request($client_id, $vehicle_id, $start_date, $end_date);
+     return view('booking.booking_success');
+  } 
 });
 
 //Page booking_return
@@ -195,7 +212,7 @@ Route::post('booking_return_action', function(){
 
 //Page vehicle_total
 Route::get('vehicle_total', function(){
-   time_amount();
+    //$time = date('Y-m-d h:i:s', time());
 });
 
 /* Route::get('test', function (){
@@ -265,6 +282,12 @@ function delete_vehicle($id){
   DB::delete($sql, array($id));
 };
 
+function get_client_name(){
+   $sql = 'select client_id, client_name from clients';
+   $client_name = DB::select($sql);
+   return($client_name);
+};
+
 //Function to insert booking to the orders table
 function booking_request($client_id, $vehicle_id, $start_date, $end_date){
    $sql = 'insert into orders (client_id, vehicle_id, date_start, date_end, order_status) values(?, ?, ?, ?, TRUE)';
@@ -303,9 +326,8 @@ function booking_return($id, $insert){
 
 //Function for count total time
 function time_amount(){
-   $sql = 'select date_end-date_start from orders where order_id = 3';
-   $time = DB::select($sql);
-   dd($time);
+   
+   //select datediff( hour,); select current_timestamp as 'current date and time'
 };
 
 /* function convert_date($date){

@@ -6,6 +6,7 @@
 
 @section('content')
    <h1>Book a vehicle</h1>
+   <p class="error">{{$errormsg}}</p>
    <form method="post" action="{{url("booking_action")}}">
       {{csrf_field()}}
       <h2><label>Choose your name</label></h2>

@@ -6,7 +6,7 @@
 
 @section('content')
     <h1>Edit Vehicle information</h1>
-    <p class="error">Error: {{$errormsg}}</p>
+    <p class="error">{{$errormsg}}</p>
     <form method="post" action="{{url("update_vehicle_action")}}">
        {{csrf_field()}}
        <input type="hidden" name="id" value="{{$id}}">
