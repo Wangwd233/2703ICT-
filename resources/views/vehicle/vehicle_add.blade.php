@@ -26,7 +26,7 @@
        <p><strong>Format: </strong>Odometer should be number which have maxmium length at 10.</p>
        <p>
        <label>seats</label>
-       <input type="number" name="seats" min="1" max="30" required></p>
+       <input type="number" name="seats" min="4" max="30" required></p>
        <p><strong>Format: </strong>Seats are not less than 1 or greater than 30.</p>
        <input type="submit" value="add vehicle">
     </form>

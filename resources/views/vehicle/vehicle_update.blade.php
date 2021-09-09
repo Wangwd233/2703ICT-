@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-    <h1>Add a new vehicle</h1>
+    <h1>Edit Vehicle information</h1>
     <form method="post" action="{{url("update_vehicle_action")}}">
        {{csrf_field()}}
        <input type="hidden" name="id" value="{{$id}}">
@@ -27,7 +27,7 @@
        <p><strong>Format: </strong>Odometer should be number which have maxmium length at 10.</p>
        <p>
        <label>seats</label>
-       <input type="number" name="seats" min="1" max="30" required></p>
+       <input type="number" name="seats" min="4" max="30" required></p>
        <p><strong>Format: </strong>Seats are not less than 1 or greater than 30.</p>
        <input type="submit" value="update vehicle">
     </form>
