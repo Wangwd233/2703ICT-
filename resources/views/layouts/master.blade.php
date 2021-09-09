@@ -48,6 +48,7 @@
       <a class="active" href="{{url("/")}}">Home</a>
       <a href="{{url('clients_detail')}}">Clients Detail</a>
       <a href="{{url("booking_list")}}">Booking a Vehicle</a>
+      <a href="{{url("vehicle_total")}}">Total booking time</a>
     </div>  
 
     @yield('content')

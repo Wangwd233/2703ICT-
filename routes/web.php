@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     $sql = "select * from vehicle";
     $vehicle = DB::select($sql);
-    //dd($vehicle);
     return view('vehicle.vehicle_list')->with("vehicle", $vehicle);
 });
 
@@ -30,41 +29,112 @@ Route::get('vehicle_detail/{vehicle_id}', function($vehicle_id){
 
 //vehicle_add page
 Route::get('add_vehicle', function(){
-   return view('vehicle.vehicle_add');
+   $errormsg = "";
+   return view('vehicle.vehicle_add')->with('errormsg', $errormsg);
 });
 
 //Route for submitting a new vehicle
 Route::post('add_vehicle_action', function(){
+   $errormsg = "";
    $rego = request('rego');
    $model = request('model');
    $year = request('year');
    $odometer = request('odometer');
    $seats = request('seats');
-   $id = add_vehicle($rego, $model, $year, $odometer, $seats);
-   if($id) {
-      return redirect("vehicle_detail/$id");
-  } else{
-      die ("Error while adding item. ");
-  };
+   if(!empty($rego) || !empty($model) || !empty($year) || !empty($odometer) || !empty($seats)){
+      if(is_string($rego) == TRUE && strlen($rego) == 6){
+         if(is_string($model) == TRUE && strlen($model) <= 50){
+           if(is_numeric($year) == TRUE && $year >=2000 && $year <= 2021){
+              if(is_numeric($odometer) && $odometer >=0 && $odometer <= 9999999){
+                if(is_numeric($seats) == TRUE && $seats >= 4 && $seats <= 30){
+                   $id = add_vehicle($rego, $model, $year, $odometer, $seats);
+                   if($id) {
+                      return redirect("vehicle_detail/$id");
+                   }else{
+                     $errormsg = "Error while adding item. ";
+                     return view('vehicle.vehicle_add')->with('errormsg', $errormsg);
+                  };
+                }else{
+                  $errormsg = "Error: Seats should be a number and between 4 and 30";
+                  return view('vehicle.vehicle_add')->with('errormsg', $errormsg);
+                }
+              }else{
+               $errormsg = "Error: Odometer should be a number and between 0 and 9999999";
+               return view('vehicle.vehicle_add')->with('errormsg', $errormsg);
+              }
+           }else{
+            $errormsg = "Error: Year should be a number and between 2000 and 2021!";
+            return view('vehicle.vehicle_add')->with('errormsg', $errormsg);
+           }
+         }else{
+            $errormsg = "Error: Field model is too long!";
+            return view('vehicle.vehicle_add')->with('errormsg', $errormsg);
+         }
+      }else{
+         $errormsg = "Error: Field rego have wrong format";
+         return view('vehicle.vehicle_add')->with('errormsg', $errormsg);
+      }
+   }else{
+      $errormsg = "Error: Field should be fulfilled before submit";
+      return view('vehicle.vehicle_add')->with('errormsg', $errormsg);
+   };
+   
 });
 
 //Vehicle_update page
 Route::get('vehicle_update/{vehicle_id}', function($vehicle_id){
-   return view('vehicle.vehicle_update')->with('id', $vehicle_id);
+   $errormsg = "";
+   return view('vehicle.vehicle_update')->with('id', $vehicle_id)->with('errormsg', $errormsg);
 });
 
 //Route for submitting changes for vehicle
 Route::post('update_vehicle_action', function(){
+   $errormsg = "";
    $id = request('id');
    $rego = request('rego');
    $model = request('model');
    $year = request('year');
    $odometer = request('odometer');
    $seats = request('seats');
-   update_vehicle($id, $rego, $model, $year, $odometer, $seats);
-   $vehicle = get_vehicle($id);
-   $orders = booking_list($id);
-   return view('vehicle.vehicle_detail')->with("vehicle", $vehicle)->with("orders", $orders);
+   if(!empty($rego) || !empty($model) || !empty($year) || !empty($odometer) || !empty($seats)){
+      if(is_string($rego) == TRUE && strlen($rego) == 6){
+         if(is_string($model) == TRUE && strlen($model) <= 50){
+           if(is_numeric($year) == TRUE && $year >=2000 && $year <= 2021){
+              if(is_numeric($odometer) && $odometer >=0 && $odometer <= 9999999){
+                if(is_numeric($seats) == TRUE && $seats >= 4 && $seats <= 30){
+                    update_vehicle($id, $rego, $model, $year, $odometer, $seats);
+                    $vehicle = get_vehicle($id);
+                    $orders = booking_list($id);
+                    return view('vehicle.vehicle_detail')->with("vehicle", $vehicle)->with("orders", $orders);
+                }else{
+                  $errormsg = "Error: Seats should be a number and between 4 and 30";
+                  return view('vehicle.vehicle_update')->with('id', $id)->with('errormsg', $errormsg);
+                }
+              }else{
+               $errormsg = "Error: Odometer should be a number and between 0 and 9999999";
+               return view('vehicle.vehicle_update')->with('id', $id)->with('errormsg', $errormsg);
+              }
+           }else{
+            $errormsg = "Error: Year should be a number and between 2000 and 2021!";
+            return view('vehicle.vehicle_update')->with('id', $id)->with('errormsg', $errormsg);
+           }
+         }else{
+            $errormsg = "Error: Field model is too long!";
+            return view('vehicle.vehicle_update')->with('id', $id)->with('errormsg', $errormsg);
+         }
+      }else{
+         $errormsg = "Error: Field rego have wrong format";
+         return view('vehicle.vehicle_update')->with('id', $id)->with('errormsg', $errormsg);
+      }
+   }else{
+      $errormsg = "Error: Field should be fulfilled before submit";
+      return view('vehicle.vehicle_update')->with('id', $id)->with('errormsg', $errormsg);
+   };
+
+   //update_vehicle($id, $rego, $model, $year, $odometer, $seats);
+      //$vehicle = get_vehicle($id);
+      //$orders = booking_list($id);
+     //return view('vehicle.vehicle_detail')->with("vehicle", $vehicle)->with("orders", $orders);
 });
 
 //Vehicle_delete page
@@ -103,9 +173,30 @@ Route::post('booking_action', function(){
   $start_date = request('startdate');
   $end_date = request('enddate');
   $id = booking_request($client_id, $vehicle_id, $start_date, $end_date);
-  dd($id);
+  return view('booking.booking_success');
 });
 
+//Page booking_return
+Route::post('booking_return', function(){
+  $id = request('id');
+  return view('booking.booking_return')->with('id', $id);
+});
+
+//Route for return submitting
+Route::post('booking_return_action', function(){
+  $id = request('id');
+  $odometer = request('odometer');
+  $vehicle_id = booking_return($id, $odometer);
+  $vehicle = get_vehicle($vehicle_id);
+  $orders = booking_list($id);
+  return view('vehicle.vehicle_detail')->with("vehicle", $vehicle)->with("orders", $orders);
+
+});
+
+//Page vehicle_total
+Route::get('vehicle_total', function(){
+   time_amount();
+});
 
 /* Route::get('test', function (){
    return view('test');
@@ -176,7 +267,7 @@ function delete_vehicle($id){
 
 //Function to insert booking to the orders table
 function booking_request($client_id, $vehicle_id, $start_date, $end_date){
-   $sql = 'insert into orders (client_id, vehicle_id, date_start, date_end) values(?, ?, ?, ?)';
+   $sql = 'insert into orders (client_id, vehicle_id, date_start, date_end, order_status) values(?, ?, ?, ?, TRUE)';
    DB::insert($sql, array($client_id, $vehicle_id, $start_date, $end_date));
    $id = DB::getPdo()->lastInsertId();
    return($id);
@@ -184,8 +275,8 @@ function booking_request($client_id, $vehicle_id, $start_date, $end_date){
 
 //function to query and list booking request for each cars
 function booking_list($vehicle_id){
-   $sql = 'select orders.client_id, clients.client_name, clients.license_num, orders.date_start, orders.date_end 
-   from orders,clients where orders.client_id = clients.client_id and orders.vehicle_id = ?';
+   $sql = 'select orders.order_id, orders.client_id, clients.client_name, clients.license_num, orders.date_start, orders.date_end 
+   from orders,clients where orders.client_id = clients.client_id and orders.vehicle_id = ? and orders.order_status = TRUE';
    $orders = DB::select($sql, array($vehicle_id));
    if($orders){
      return($orders);
@@ -194,6 +285,28 @@ function booking_list($vehicle_id){
    }
 };
 
+function booking_return($id, $insert){
+   $sql = 'select vehicle.vehicle_id,vehicle.odometer from orders, vehicle where orders.vehicle_id = vehicle.vehicle_id and orders.order_id = ?';
+   $odometer = DB::select($sql, array($id));
+   if(count($odometer) != 2){
+     $new = $odometer[0]->odometer + $insert;
+     $sql = 'update vehicle set odometer = ? where vehicle_id = ?';
+     $vehicle_id = $odometer[0]->vehicle_id;
+     DB::update($sql, array($new, $vehicle_id));
+     $sql = 'update orders set order_status = FALSE where order_id = ?';
+     DB::update($sql, array($id));
+     return($vehicle_id);
+   }else{
+      die("Something has gone wrong, invalid query or result: $sql");
+   };
+};
+
+//Function for count total time
+function time_amount(){
+   $sql = 'select date_end-date_start from orders where order_id = 3';
+   $time = DB::select($sql);
+   dd($time);
+};
 
 /* function convert_date($date){
    $sql = "insert into test (summary) values (?)";

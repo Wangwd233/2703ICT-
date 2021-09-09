@@ -23,6 +23,11 @@
           <tr><td>Booking start date and time: </td><td>{{$order->date_start}}</td></tr>
           <tr><td>Returning date and time: </td><td>{{$order->date_end}}</td></tr>
          </table><br>
+         <form method="post" action="{{url("booking_return")}}">
+           {{csrf_field()}}
+           <input type="hidden" name="id" value="{{$order->order_id}}">
+           <input type="submit" value="return">
+         </form>
       @endforeach
    @endif
    <button><a href= "{{url("vehicle_update/$vehicle->vehicle_id")}}">Edit vehicle information</a></button><br><br>
