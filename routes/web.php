@@ -22,7 +22,13 @@ Route::get('/', function () {
 
 Route::get('vehicle_detail/{vehicle_id}', function($vehicle_id){
    $vehicle = get_vehicle($vehicle_id);
-   return view('vehicle.vehicle_detail')->with("vehicle", $vehicle);
+   $orders = booking_list($vehicle_id);
+   //if(is_string($orders) == TRUE){
+      //return view('vehicle.vehicle_detail')->with("vehicle", $vehicle)->with('noOrder', $orders);
+   //}else{
+      return view('vehicle.vehicle_detail')->with("vehicle", $vehicle)->with('orders', $orders);
+   //};
+   //return view('vehicle.vehicle_detail')->with("vehicle", $vehicle)->with('orders', $orders);
 });
 
 Route::get('add_vehicle', function(){
@@ -63,6 +69,36 @@ Route::get('vehicle_delete/{vehicle_id}', function($vehicle_id){
    return view('vehicle.vehicle_delete')->with('id', $vehicle_id);
 });
 
+Route::post('vehicle_delete_comfirm', function(){
+  $id = request('id');
+  delete_vehicle($id);
+  return view('vehicle.delete_complete');
+});
+
+Route::get('clients_detail', function(){
+  $sql = 'select * from clients';
+  $client_list = DB::select($sql);
+  return view('clients.clients_detail')->with('clients', $client_list);
+});
+
+Route::get('booking_list', function(){
+  $sql = 'select client_id, client_name from clients';
+  $client_name = DB::select($sql);
+  $sql = 'select vehicle_id, rego from vehicle';
+  $vehicle_rego = DB::select($sql);
+  return view('booking.booking_list')->with('clients', $client_name)->with('vehicle_rego', $vehicle_rego);
+});
+
+Route::post('booking_action', function(){
+  $client_id = request('id');
+  $vehicle_id = request('rego');
+  $start_date = request('startdate');
+  $end_date = request('enddate');
+  $id = booking_request($client_id, $vehicle_id, $start_date, $end_date);
+  dd($id);
+});
+
+
 Route::get('test', function (){
    return view('test');
 });
@@ -80,7 +116,7 @@ function get_vehicle($id){
        die("Something has gone wrong, invalid query or result: $sql");
    };
    $vehicle_detail = $vehicle[0];
-   return $vehicle_detail;
+   return($vehicle_detail);
 };
 
 function add_vehicle($rego, $model, $year, $odometer, $seats){
@@ -119,6 +155,30 @@ function update_vehicle($id, $rego, $model, $year, $odometer, $seats){
       die("The vehicle with rego $rego is already exist!");
    };
 };
+
+function delete_vehicle($id){
+  $sql = 'delete from vehicle where vehicle_id = ?';
+  DB::delete($sql, array($id));
+};
+
+function booking_request($client_id, $vehicle_id, $start_date, $end_date){
+   $sql = 'insert into orders (client_id, vehicle_id, date_start, date_end) values(?, ?, ?, ?)';
+   DB::insert($sql, array($client_id, $vehicle_id, $start_date, $end_date));
+   $id = DB::getPdo()->lastInsertId();
+   return($id);
+};
+
+function booking_list($vehicle_id){
+   $sql = 'select orders.client_id, clients.client_name, clients.license_num, orders.date_start, orders.date_end 
+   from orders,clients where orders.client_id = clients.client_id and orders.vehicle_id = ?';
+   $orders = DB::select($sql, array($vehicle_id));
+   if($orders){
+     return($orders);
+   }else{
+      return("no booking request yet");
+   }
+};
+
 
 function convert_date($date){
    //$cdate = "convert(datetime, ?, 20)";
