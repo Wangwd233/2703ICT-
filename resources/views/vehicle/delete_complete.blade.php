@@ -6,5 +6,5 @@
 
 @section('content')
    <h1>Item has been deleted!</h1>
-   <a href= "{{url("/")}}">Back to Home Page</a><br>
+   <button><a href= "{{url("/")}}">Back to Home Page</a></button><br>
 @endsection

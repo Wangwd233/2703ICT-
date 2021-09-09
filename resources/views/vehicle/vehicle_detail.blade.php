@@ -25,7 +25,6 @@
          </table><br>
       @endforeach
    @endif
-   <a href= "{{url("vehicle_update/$vehicle->vehicle_id")}}">Edit vehicle information</a><br>
-   <a href= "{{url("vehicle_delete/$vehicle->vehicle_id")}}">Delete this vehicle</a><br>
-   <a href= "{{url("/")}}">Home</a><br>
+   <button><a href= "{{url("vehicle_update/$vehicle->vehicle_id")}}">Edit vehicle information</a></button><br><br>
+   <button><a href= "{{url("vehicle_delete/$vehicle->vehicle_id")}}">Delete this vehicle</a></button>
 @endsection

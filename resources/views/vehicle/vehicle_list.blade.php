@@ -17,7 +17,7 @@
    @endif
    
 
-   <p><a href="{{url('add_vehicle')}}">Add a new vehicle</a></p>
+   <p><button><a href="{{url('add_vehicle')}}">Add a new vehicle</a></button></p>
    <!-- <p><a href="{{url('clients_detail')}}">List of clients</a></p>
    <p><a href="{{url("booking_list")}}">Book a vehicle</a></p> -->
 @endsection

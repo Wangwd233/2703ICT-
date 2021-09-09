@@ -16,6 +16,4 @@
          <h3><li>{{$client->DoB}}</li></h3>
       </ul>
    @endforeach
-
-   <p><a href="{{url('/')}}">Home</p>
 @endsection

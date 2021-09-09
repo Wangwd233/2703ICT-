@@ -12,5 +12,5 @@
           <input type="hidden" name="id" value="{{$id}}">
           <input type="submit" value="delete now">
         </form>
-        <p><a href="{{url("item_detail/$id")}}">Go back</a></p>
+        <p><button><a href="{{url("vehicle_detail/$id")}}">Go back</a></button></p>
 @endsection
