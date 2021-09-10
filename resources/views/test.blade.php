@@ -10,6 +10,7 @@
     <form method='post' action="{{url("test_action")}}">
        {{csrf_field()}}
        <input type="datetime-local" name="test">
+       <input type="datetime-local" name="test1">
        <input type="submit" value="submit">
     </form>
 </body>

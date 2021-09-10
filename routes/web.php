@@ -242,18 +242,20 @@ Route::post('booking_return_action', function(){
 
 //Page vehicle_total
 Route::get('vehicle_total', function(){
-    //$time = date('Y-m-d h:i:s', time());
+    $vehicle_total = add_date();
+    return view('vehicle.vehicle_total')->with('vehicle_total', $vehicle_total);
 });
 
-/* Route::get('test', function (){
+Route::get('test', function (){
    return view('test');
-}); */
+}); 
 
-/* Route::post('test_action', function(){
+Route::post('test_action', function(){
    $test = request('test');
-   $id = convert_date($test);
+   $test1 = request('test1');
+   $id = convert_date($test, $test1);
    dd($id);
-}); */
+}); 
 
 //Function to get a vehicle detail by id
 function get_vehicle($id){
@@ -360,15 +362,41 @@ function get_booking_date($vehicle_id){
    return($orders);
 };
 
-//Function for count total time
-function time_amount(){
-   
-   //select datediff( hour,); select current_timestamp as 'current date and time'
-};
 
-/* function convert_date($date){
-   $sql = "insert into test (summary) values (?)";
-   DB::insert($sql, array($date));
-   $id = DB::getPdo()->lastInsertId();
+
+function convert_date($date, $date1){
+   $date_s = strtotime($date);
+   $date1_s = strtotime($date1);
+   $diff = $date1_s - $date_s;
+   $days =abs(round($diff / 86400, 2));
+   dd($days);
    return($id);
-}; */
+}; 
+
+//Function for count total time
+function add_date(){
+   $vehicle_total = []; 
+   $sql = 'select vehicle_id, rego from vehicle';
+   $vehicle = DB::select($sql);
+   foreach($vehicle as $car){
+      $days = 0;
+      $vehicle_id = $car->vehicle_id;
+      $vehicle_rego = $car->rego;
+      $sql = 'select date_start, date_end from orders where vehicle_id = ?';
+      $times = DB::select($sql, array($vehicle_id));
+      if($times){
+         foreach($times as $time){
+            $start_date = strtotime($time->date_start);
+            $end_date = strtotime($time->date_end);
+            $diff = $end_date - $start_date;
+            $day = abs(round($diff / 86400, 2));
+            $days = $days + $day;
+         }
+         $vehicle_total[$vehicle_id] = [$vehicle_rego, $days];
+
+      }else{
+         $vehicle_total[$vehicle_id] = [$vehicle_rego, $days];
+      };
+   };
+   return($vehicle_total);
+};
