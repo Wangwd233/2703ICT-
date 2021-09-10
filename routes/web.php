@@ -48,12 +48,12 @@ Route::post('add_vehicle_action', function(){
               if(is_numeric($odometer) && $odometer >=0 && $odometer <= 9999999){
                 if(is_numeric($seats) == TRUE && $seats >= 4 && $seats <= 30){
                    $id = add_vehicle($rego, $model, $year, $odometer, $seats);
-                   if($id) {
-                      if(is_string($id)){
+                   if($id){
+                      if(is_numeric($id)){
+                        return redirect("vehicle_detail/$id");
+                      }else{
                         $errormsg = $id;
                         return view('vehicle.vehicle_add')->with('errormsg', $errormsg);
-                      }else{
-                         return redirect("vehicle_detail/$id");
                       }
                    }else{
                      $errormsg = "Error while adding item. ";
@@ -246,16 +246,16 @@ Route::get('vehicle_total', function(){
     return view('vehicle.vehicle_total')->with('vehicle_total', $vehicle_total);
 });
 
-Route::get('test', function (){
+/* Route::get('test', function (){
    return view('test');
-}); 
+}); */
 
-Route::post('test_action', function(){
+/* Route::post('test_action', function(){
    $test = request('test');
    $test1 = request('test1');
    $id = convert_date($test, $test1);
    dd($id);
-}); 
+}); */
 
 //Function to get a vehicle detail by id
 function get_vehicle($id){
