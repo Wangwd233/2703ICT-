@@ -31,6 +31,6 @@
        <input type="text" name="seats"></p>
        <p><strong>Format: </strong>Seats are not less than 4 or greater than 30.</p>
        <input type="submit" value="update vehicle">
-    </form>
+    </form><br><br>
        <button><a href="{{url("vehicle_detail/$id")}}">Go back </a></button>
 @endsection

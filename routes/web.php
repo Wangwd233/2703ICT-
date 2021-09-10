@@ -49,7 +49,12 @@ Route::post('add_vehicle_action', function(){
                 if(is_numeric($seats) == TRUE && $seats >= 4 && $seats <= 30){
                    $id = add_vehicle($rego, $model, $year, $odometer, $seats);
                    if($id) {
-                      return redirect("vehicle_detail/$id");
+                      if(is_string($id)){
+                        $errormsg = $id;
+                        return view('vehicle.vehicle_add')->with('errormsg', $errormsg);
+                      }else{
+                         return redirect("vehicle_detail/$id");
+                      }
                    }else{
                      $errormsg = "Error while adding item. ";
                      return view('vehicle.vehicle_add')->with('errormsg', $errormsg);
@@ -102,10 +107,15 @@ Route::post('update_vehicle_action', function(){
            if(is_numeric($year) == TRUE && $year >=2000 && $year <= 2021){
               if(is_numeric($odometer) && $odometer >=0 && $odometer <= 9999999){
                 if(is_numeric($seats) == TRUE && $seats >= 4 && $seats <= 30){
-                    update_vehicle($id, $rego, $model, $year, $odometer, $seats);
-                    $vehicle = get_vehicle($id);
-                    $orders = booking_list($id);
-                    return view('vehicle.vehicle_detail')->with("vehicle", $vehicle)->with("orders", $orders);
+                    $msg = update_vehicle($id, $rego, $model, $year, $odometer, $seats);
+                    if(!empty($msg)){
+                       $errormsg = $msg;
+                       return view('vehicle.vehicle_update')->with('id', $id)->with('errormsg', $errormsg);
+                    }else{
+                       $vehicle = get_vehicle($id);
+                       $orders = booking_list($id);
+                       return view('vehicle.vehicle_detail')->with("vehicle", $vehicle)->with("orders", $orders);
+                    }
                 }else{
                   $errormsg = "Error: Seats should be a number and between 4 and 30";
                   return view('vehicle.vehicle_update')->with('id', $id)->with('errormsg', $errormsg);
@@ -209,18 +219,25 @@ Route::post('booking_action', function(){
 
 //Page booking_return
 Route::post('booking_return', function(){
+  $errormsg = "";
   $id = request('id');
-  return view('booking.booking_return')->with('id', $id);
+  return view('booking.booking_return')->with('id', $id)->with('errormsg', $errormsg);
 });
 
 //Route for return submitting
 Route::post('booking_return_action', function(){
+  $errormsg = "";
   $id = request('id');
   $odometer = request('odometer');
-  $vehicle_id = booking_return($id, $odometer);
-  $vehicle = get_vehicle($vehicle_id);
-  $orders = booking_list($vehicle_id);
-  return view('vehicle.vehicle_detail')->with("vehicle", $vehicle)->with("orders", $orders);
+  if(is_numeric($odometer) && $odometer >=0 && $odometer <= 9999999){
+     $vehicle_id = booking_return($id, $odometer);
+     $vehicle = get_vehicle($vehicle_id);
+     $orders = booking_list($vehicle_id);
+     return view('vehicle.vehicle_detail')->with("vehicle", $vehicle)->with("orders", $orders);
+  }else{
+     $errormsg = "Error: Odometer should be a number not less than 0 and higher than 9999999!";
+     return view('booking.booking_return')->with('id', $id)->with('errormsg', $errormsg);
+  }
 });
 
 //Page vehicle_total
@@ -266,7 +283,7 @@ function add_vehicle($rego, $model, $year, $odometer, $seats){
       $id = DB::getPdo()->lastInsertId();
       return($id);
    }else{
-      die("The vehicle with rego $rego is already exist!");
+      return("Error: The vehicle with rego $rego is already exist!");
    };
    
 };
@@ -285,7 +302,7 @@ function update_vehicle($id, $rego, $model, $year, $odometer, $seats){
       $sql = 'update vehicle set rego = ?, model = ?, year = ?, odometer = ?, seats = ? where vehicle_id = ?';
       DB::update($sql, array($rego, $model, $year, $odometer, $seats, $id));
    }else{
-      die("The vehicle with rego $rego is already exist!");
+      return("Error: The vehicle with rego $rego is already exist!");
    };
 };
 
