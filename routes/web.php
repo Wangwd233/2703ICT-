@@ -181,6 +181,7 @@ Route::post('booking_action', function(){
   $end_date_timestamp = strtotime($end_date);
   $currenttime = date('Y-m-d h:i:s', time());
   $currenttimestamp = strtotime($currenttime);
+  $booking_date_list = get_booking_date($vehicle_id);
   if($start_date_timestamp < $currenttimestamp){
      $errormsg = "Error: Start date must be a date and time in the future!";
      return view('booking.booking_list')->with('clients', $client_name)->with('vehicle_rego', $vehicle_rego)->with('errormsg', $errormsg);
@@ -188,8 +189,21 @@ Route::post('booking_action', function(){
      $errormsg = "Error: Returning date should later than the start date!";
      return view('booking.booking_list')->with('clients', $client_name)->with('vehicle_rego', $vehicle_rego)->with('errormsg', $errormsg);
   }else{
-     $id = booking_request($client_id, $vehicle_id, $start_date, $end_date);
-     return view('booking.booking_success');
+     if(!empty($booking_date_list)){
+        foreach($booking_date_list as $order){
+           $order_start_timestamp = strtotime($order->date_start);
+           $order_end_timestamp = strtotime($order->date_end);
+           if(($start_date_timestamp <= $order_end_timestamp && $end_date_timestamp >= $order_end_timestamp)|| ($end_date_timestamp >= $order_end_timestamp && $start_date_timestamp <= $order_start_timestamp) || ($start_date_timestamp >= $order_start_timestamp && $end_date_timestamp <= $order_end_timestamp) || ($start_date_timestamp <= $order_start_timestamp && $end_date_timestamp >= $order_end_timestamp)){
+              $errormsg = "Error: The booking time your have submitted overlaps with other booking!";
+              return view('booking.booking_list')->with('clients', $client_name)->with('vehicle_rego', $vehicle_rego)->with('errormsg', $errormsg);
+           }  
+        } 
+        $id = booking_request($client_id, $vehicle_id, $start_date, $end_date);
+        return view('booking.booking_success');
+     }else{
+        $id = booking_request($client_id, $vehicle_id, $start_date, $end_date);
+        return view('booking.booking_success');
+     };
   } 
 });
 
@@ -205,9 +219,8 @@ Route::post('booking_return_action', function(){
   $odometer = request('odometer');
   $vehicle_id = booking_return($id, $odometer);
   $vehicle = get_vehicle($vehicle_id);
-  $orders = booking_list($id);
+  $orders = booking_list($vehicle_id);
   return view('vehicle.vehicle_detail')->with("vehicle", $vehicle)->with("orders", $orders);
-
 });
 
 //Page vehicle_total
@@ -299,7 +312,7 @@ function booking_request($client_id, $vehicle_id, $start_date, $end_date){
 //function to query and list booking request for each cars
 function booking_list($vehicle_id){
    $sql = 'select orders.order_id, orders.client_id, clients.client_name, clients.license_num, orders.date_start, orders.date_end 
-   from orders,clients where orders.client_id = clients.client_id and orders.vehicle_id = ? and orders.order_status = TRUE';
+   from orders,clients where orders.client_id = clients.client_id and orders.vehicle_id = ? and orders.order_status = TRUE order by orders.date_start';
    $orders = DB::select($sql, array($vehicle_id));
    if($orders){
      return($orders);
@@ -322,6 +335,12 @@ function booking_return($id, $insert){
    }else{
       die("Something has gone wrong, invalid query or result: $sql");
    };
+};
+
+function get_booking_date($vehicle_id){
+   $sql = 'select date_start, date_end from orders where vehicle_id = ? and order_status = TRUE';
+   $orders = DB::select($sql, array($vehicle_id));
+   return($orders);
 };
 
 //Function for count total time
